@@ -1,38 +1,42 @@
-import React, { KeyboardEvent } from 'react';
-import { Send } from 'lucide-react';
+import { Dispatch, SetStateAction } from 'react';
+import { useLanguage } from '../LanguageContext';
+import { translations } from '../translations';
 
 interface ChatInputProps {
   message: string;
-  setMessage: (message: string) => void;
+  setMessage: Dispatch<SetStateAction<string>>;
   onSend: () => void;
+  placeholder?: string;
 }
 
-export function ChatInput({ message, setMessage, onSend }: ChatInputProps) {
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onSend();
-    }
+export function ChatInput({ message, setMessage, onSend, placeholder = 'Type your message...' }: ChatInputProps) {
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSend();
   };
 
   return (
-    <div className="border-t border-gray-200 p-4 bg-white">
-      <div className="max-w-4xl mx-auto flex gap-4">
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your message... / メッセージを入力..."
-          className="flex-1 resize-none rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows={1}
-        />
-        <button
-          onClick={onSend}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Send className="w-4 h-4" />
-          <span>Send / 送信</span>
-        </button>
+    <div className="border-t bg-white p-4">
+      <div className="max-w-3xl mx-auto">
+        <form onSubmit={handleSubmit} className="relative">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={placeholder}
+            className="w-full pl-4 pr-24 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            disabled={!message.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {t.send}
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -1,19 +1,34 @@
 export interface Message {
   id: number;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'user' | 'bot' | 'system';
   isLoading?: boolean;
 }
 
 export type Language = 'en' | 'ja';
 
-export interface Translations {
-  chatHistory: string;
-  typing: string;
-  enterTopic: string;
+interface TranslationStrings {
+  // Header
+  title: string;
+  languageSelector: string;
+  
+  // Chat
   typeMessage: string;
+  send: string;
+  thinking: string;
   error: string;
-  welcomeTitle: string;
-  welcomeSubtitle: string;
-  startChat: string;
+  
+  // Advisor Types
+  general: string;
+  career: string;
+  health: string;
+  finance: string;
+  education: string;
+  
+  // Messages
+  advisorChanged: (advisor: string) => string;
 }
+
+export type Translations = {
+  [key in Language]: TranslationStrings;
+};

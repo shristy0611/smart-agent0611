@@ -1,9 +1,17 @@
-import { GEMINI_CONFIG } from '../config/gemini';
-import { formatResponse } from '../utils/languageUtils';
+import { Language } from '../types';
 
-export async function callGeminiAPI(systemPrompt: string, message: string): Promise<string> {
+export async function callGeminiAPI(systemPrompt: string, message: string, language: Language = 'en') {
   try {
-    const response = await fetch(`${GEMINI_CONFIG.endpoint}?key=${GEMINI_CONFIG.apiKey}`, {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('Gemini API key not found');
+    }
+
+    const languageInstruction = language === 'ja' 
+      ? '必ず日本語で返信してください。'
+      : 'Please respond in English only.';
+
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -11,7 +19,7 @@ export async function callGeminiAPI(systemPrompt: string, message: string): Prom
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `${systemPrompt}\n\nUser: ${message}`
+            text: `${systemPrompt}\n\n${languageInstruction}\n\nUser: ${message}`
           }]
         }]
       })
@@ -22,7 +30,7 @@ export async function callGeminiAPI(systemPrompt: string, message: string): Prom
     }
 
     const data = await response.json();
-    return formatResponse(data.candidates[0].content.parts[0].text);
+    return data.candidates[0].content.parts[0].text;
   } catch (error) {
     console.error('Error calling Gemini API:', error);
     throw error;
